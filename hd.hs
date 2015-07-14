@@ -3,7 +3,7 @@
 module Main where
 
 import System.Environment(getArgs)
-import Network.HTTP.Conduit
+import Network.HTTP.Conduit(withManager, parseUrl, responseBody, httpLbs)
 import Data.Text (Text)
 import Data.Aeson
 
@@ -21,7 +21,7 @@ data YandexTranslation =
 
 data YandexDefinition = 
   YandexDefinition {
-    -- text :: !String,
+    pos :: !String,
     tr :: [YandexTranslation]
   } deriving (Show, Generic)
 
@@ -38,26 +38,30 @@ instance ToJSON YandexDefinition
 instance FromJSON YandexDictionaryResult
 instance ToJSON YandexDictionaryResult
 
-getTranslation :: String -> IO (Either String YandexDictionaryResult)
-getTranslation word = do
-  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=en-ru&key=" ++ apiKey ++ "&text=" ++ word
+getTranslation2 :: String -> String -> IO (Either String YandexDictionaryResult)
+getTranslation2 lang word = do
+  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=" ++ lang ++ "&key=" ++ apiKey ++ "&text=" ++ word
 
   request <- parseUrl url
   res <- withManager $ \manager -> httpLbs request manager
 
-  liftIO $ L.putStrLn $ responseBody res
+  -- liftIO $ L.putStrLn $ responseBody res
 
   return $ eitherDecode $ responseBody res
 
+getTranslation :: String -> IO (Either String YandexDictionaryResult)
+getTranslation word = getTranslation2 "en-en" word
+
 yandexTranslation :: YandexTranslation -> String
-yandexTranslation tr = "translation"
+yandexTranslation tr = text tr
 
 yandexDefinition :: YandexDefinition -> String
-yandexDefinition def = "definition"
+yandexDefinition def = unwords (map yandexTranslation (tr def))
 
 printYandexDictionaryResult :: YandexDictionaryResult -> IO ()
 printYandexDictionaryResult result = do
-  putStrLn (yandexDefinition (Prelude.head (def result)))
+  -- putStrLn "Meanings:"
+  mapM_ putStrLn (map yandexDefinition (def result))
   return ()
 
 main = do 
