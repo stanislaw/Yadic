@@ -11,9 +11,12 @@ apiKey = "dict.1.1.20150714T192659Z.ececbd899bdd6716.e710db82e5a002c35ce71d6bf1e
 
 performHttpRequest :: String -> IO ()
 performHttpRequest request = do
-  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=APIkey&lang=en-ru&text=time"
-  response <- simpleHttp "http://www.haskell.org/"
-  liftIO $ L.putStr $ (responseBody response)
+  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=en-en&key=" ++ apiKey ++ "&text=" ++ request
+
+  request <- parseUrl url
+  withManager $ \manager -> do
+    res <- httpLbs request manager
+    liftIO $ L.putStr $ responseBody res
   return ()
 
 wordHttpRequest :: String -> String
