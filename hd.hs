@@ -16,7 +16,7 @@ performHttpRequest request = do
   request <- parseUrl url
   withManager $ \manager -> do
     res <- httpLbs request manager
-    liftIO $ L.putStr $ responseBody res
+    liftIO $ L.putStrLn $ responseBody res
   return ()
 
 wordHttpRequest :: String -> String
