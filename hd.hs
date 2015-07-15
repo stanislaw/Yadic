@@ -73,6 +73,12 @@ main = do
         Left err -> putStrLn err
         Right translation -> printYandexDictionaryResult translation
       return ()
+    [lang, word] -> do
+      translation <- getTranslation2 lang word
+      case translation of
+        Left err -> putStrLn err
+        Right translation -> printYandexDictionaryResult translation
+      return ()
     _ -> do
       putStrLn "Enter a word"
 
