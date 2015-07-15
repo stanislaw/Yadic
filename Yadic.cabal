@@ -1,13 +1,12 @@
 Name:                yadic
 Version:             0.1
-Synopsis:            Super cool mega lambdas
-Description:         My super cool, indeed, even mega lambdas 
-                     will demonstrate a basic project. You will marvel.
+Synopsis:            Command-line dictionary powered by Yandex.Dictionary
+Description:         Command-line dictionary powered by Yandex.Dictionary
 License:             MIT
 License-file:        LICENSE
 Author:              Stanislaw Pankevich
 Maintainer:          Stanislaw Pankevich <s.pankevich@gmail.com>
 Build-Depends:       base, filepath, directory, text, transformers, bytestring, aeson, yaml, http-conduit
-
+Build-Type:          Simple
 Executable:          yadic
 Main-is:             yadic.hs
