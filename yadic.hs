@@ -87,8 +87,8 @@ main = do
   let configuration = Data.Yaml.decode yamlConf :: Maybe YadicConfiguration
   -- print $ fromJust configuration
 
-  let lng = (lang (fromJust configuration))
-  let apiKey = (apikey (fromJust configuration))
+  let lng = lang $ fromJust configuration
+  let apiKey = apikey $ fromJust configuration
 
   args <- getArgs
   case args of
