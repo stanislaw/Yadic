@@ -4,6 +4,7 @@ module Main where
 
 import System.Environment(getArgs)
 import Network.HTTP.Conduit(withManager, parseUrl, responseBody, httpLbs)
+import Data.List
 import Data.Text (Text)
 import Data.Aeson
 
@@ -16,12 +17,13 @@ apiKey = "dict.1.1.20150714T192659Z.ececbd899bdd6716.e710db82e5a002c35ce71d6bf1e
 
 data YandexTranslation =
   YandexTranslation {
-    text :: !String
+    text :: !String,
+    pos :: !String
   } deriving (Show, Generic)
 
 data YandexDefinition = 
   YandexDefinition {
-    pos :: !String,
+    -- pos :: !String,
     tr :: [YandexTranslation]
   } deriving (Show, Generic)
 
@@ -53,10 +55,10 @@ getTranslation :: String -> IO (Either String YandexDictionaryResult)
 getTranslation word = getTranslation2 "en-en" word
 
 yandexTranslation :: YandexTranslation -> String
-yandexTranslation tr = text tr
+yandexTranslation tr = (text tr) ++ " (" ++ (pos tr) ++ ")"
 
 yandexDefinition :: YandexDefinition -> String
-yandexDefinition def = unwords (map yandexTranslation (tr def))
+yandexDefinition def = concat (intersperse " " (map yandexTranslation (tr def)))
 
 printYandexDictionaryResult :: YandexDictionaryResult -> IO ()
 printYandexDictionaryResult result = do
