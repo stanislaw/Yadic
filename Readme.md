@@ -1,6 +1,6 @@
 # Yadic
 
-Yadic is a command-line dictionary for online translation powered by [Yandex.Dictionary](https://tech.yandex.com/dictionary/).
+Yadic is a command-line tool for online translation powered by [Yandex.Dictionary](https://tech.yandex.com/dictionary/).
 
 __July 15, 2015__ Yadic's 0.1 version was written in two days as my exercise in learning Haskell. I know that true Haskell hackers would hate the way I wrote it (imperative, dirty etc) so I hope to eventually improve it a lot. Meanwhile I would highly appreciate having advice from experienced Haskell programmers.
 
@@ -19,6 +19,8 @@ Kamille (noun)
 ```
 
 ## Installation
+
+Only OS X was tested so far. `ghc` compiler is needed.
 
 Clone it, build it yourself:
 
@@ -49,6 +51,8 @@ Yadic is entirely based on [Yandex.Dictionary API](https://tech.yandex.com/dicti
 
 - Learn Haskell to remove imperative non-idiomatic code
 - Modularize Yadic, write better functions
+- Add option to make output very verbose to support all the functionality Yandex.Dictionary [offers](https://tech.yandex.com/dictionary/doc/dg/reference/lookup-docpage/). But first [Haskell: multiple declarations of x](http://stackoverflow.com/questions/24352280/haskell-multiple-declarations-of-x) is somehow to be resolved.
+  
 - Add support for Yandex.Translation so that `yadic word` would go to Dictionary and `yadic "phrase"` would to to Translate.
 
 ## License
