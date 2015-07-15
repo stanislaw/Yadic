@@ -59,8 +59,8 @@ yandexDefinition def = concat (intersperse " " (map yandexTranslation (tr def)))
 
 printYandexDictionaryResult :: YandexDictionaryResult -> IO ()
 printYandexDictionaryResult result = do
-  -- putStrLn "Meanings:"
   mapM_ putStrLn (map yandexDefinition (def result))
+  -- putStrLn "\nTranslation is provided by Yandex.Dictionary https://tech.yandex.com/dictionary/."
   return ()
 
 data YadicConfiguration =

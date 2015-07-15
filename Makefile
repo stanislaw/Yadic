@@ -1,3 +1,2 @@
-compile:
-	ghc -o hd hd.hs
-	./hd get
+build:
+	ghc -o yadic yadic.hs
