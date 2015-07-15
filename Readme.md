@@ -51,6 +51,8 @@ Yadic is entirely based on [Yandex.Dictionary API](https://tech.yandex.com/dicti
 
 - Learn Haskell to remove imperative non-idiomatic code
 - Modularize Yadic, write better functions
+- Add option to make output very verbose to support all the functionality Yandex.Dictionary [offers](https://tech.yandex.com/dictionary/doc/dg/reference/lookup-docpage/). But first [Haskell: multiple declarations of x](http://stackoverflow.com/questions/24352280/haskell-multiple-declarations-of-x) is somehow to be resolved.
+  
 - Add support for Yandex.Translation so that `yadic word` would go to Dictionary and `yadic "phrase"` would to to Translate.
 
 ## License
