@@ -3,17 +3,20 @@
 module Main where
 
 import System.Environment(getArgs)
+import System.Directory(doesFileExist, getHomeDirectory)
+import System.FilePath.Posix(combine)
+import System.Exit(exitFailure)
 import Network.HTTP.Conduit(withManager, parseUrl, responseBody, httpLbs)
-import Data.List
+import Data.List (intersperse)
 import Data.Text (Text)
 import Data.Aeson
-
+import Data.Yaml
+import Data.Maybe
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as BS
 import Control.Monad.IO.Class (liftIO)
 import GHC.Generics
 import Debug.Trace
-
-apiKey = "dict.1.1.20150714T192659Z.ececbd899bdd6716.e710db82e5a002c35ce71d6bf1e5d01a54e329eb"
 
 data YandexTranslation =
   YandexTranslation {
@@ -34,14 +37,11 @@ data YandexDictionaryResult =
   } deriving (Show, Generic)
 
 instance FromJSON YandexTranslation
-instance ToJSON YandexTranslation
 instance FromJSON YandexDefinition
-instance ToJSON YandexDefinition
 instance FromJSON YandexDictionaryResult
-instance ToJSON YandexDictionaryResult
 
-getTranslation2 :: String -> String -> IO (Either String YandexDictionaryResult)
-getTranslation2 lang word = do
+getTranslation :: String -> String -> String -> IO (Either String YandexDictionaryResult)
+getTranslation apiKey lang word = do
   let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=" ++ lang ++ "&key=" ++ apiKey ++ "&text=" ++ word
 
   request <- parseUrl url
@@ -50,9 +50,6 @@ getTranslation2 lang word = do
   -- liftIO $ L.putStrLn $ responseBody res
 
   return $ eitherDecode $ responseBody res
-
-getTranslation :: String -> IO (Either String YandexDictionaryResult)
-getTranslation word = getTranslation2 "en-en" word
 
 yandexTranslation :: YandexTranslation -> String
 yandexTranslation tr = (text tr) ++ " (" ++ (pos tr) ++ ")"
@@ -66,21 +63,55 @@ printYandexDictionaryResult result = do
   mapM_ putStrLn (map yandexDefinition (def result))
   return ()
 
-main = do 
+data YadicConfiguration =
+  YadicConfiguration {
+    lang :: !String,
+    apikey :: !String
+  } deriving (Show, Generic)
+
+instance FromJSON YadicConfiguration
+
+main = do
+  homePath <- getHomeDirectory 
+  let configFile = combine homePath ".yadic"
+  -- print $ configFile
+
+  fileExists <- doesFileExist configFile
+  if fileExists  
+    then do return()
+    else do 
+      putStrLn "The configuration file doesn't exist!"
+      exitFailure
+  
+  yamlConf <- BS.readFile configFile 
+
+  let configuration = Data.Yaml.decode yamlConf :: Maybe YadicConfiguration
+  -- print $ fromJust configuration
+
+  let lng = (lang (fromJust configuration))
+  let apiKey = (apikey (fromJust configuration))
+
   args <- getArgs
   case args of
     [word] -> do
-      translation <- getTranslation word
+      translation <- getTranslation apiKey lng word
       case translation of
         Left err -> putStrLn err
         Right translation -> printYandexDictionaryResult translation
       return ()
     [lang, word] -> do
-      translation <- getTranslation2 lang word
+      translation <- getTranslation apiKey lang word
       case translation of
         Left err -> putStrLn err
         Right translation -> printYandexDictionaryResult translation
       return ()
     _ -> do
-      putStrLn "Enter a word"
+      putStrLn "Yadic, version 0.1. Powered by Yandex.Dictionary https://tech.yandex.com/dictionary/.\n"
+      putStrLn "Usage:"
+      putStrLn "  yadic [word]"
+      putStrLn "  yadic [lang] [word]"
+      putStrLn "  Example: yadic de-en kamille\n"
+      putStrLn "Configuration: create ~/.yadic configuration file with the following structure (YAML):"
+      putStrLn "lang: en-en # Default pair of languages to translate (from-to)"
+      putStrLn "apikey: dict.1.1.20150711T192659Z... # your Yandex Dictionary API key"
 
