@@ -77,8 +77,8 @@ main = do
 
   fileExists <- doesFileExist configFile
   if fileExists  
-    then do return()
-    else do 
+    then return()
+    else do
       putStrLn "The configuration file doesn't exist!"
       exitFailure
   
