@@ -9,14 +9,13 @@ import System.Exit(exitFailure)
 import Network.HTTP.Conduit(withManager, parseUrl, responseBody, httpLbs)
 import Data.List (intersperse)
 import Data.Text (Text)
-import Data.Aeson
-import Data.Yaml
+import Data.Aeson (eitherDecode, FromJSON, Object)
+import Data.Yaml (decode)
 import Data.Maybe
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Char8 as BS
 import Control.Monad.IO.Class (liftIO)
 import GHC.Generics
-import Debug.Trace
 
 data YandexTranslation =
   YandexTranslation {
