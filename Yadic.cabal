@@ -7,7 +7,7 @@ License:             MIT
 License-file:        LICENSE
 Author:              Stanislaw Pankevich
 Maintainer:          Stanislaw Pankevich <s.pankevich@gmail.com>
-Build-Depends:       base
+Build-Depends:       base, filepath, directory, text, transformers, bytestring, aeson, yaml, http-conduit
 
 Executable:          yadic
 Main-is:             yadic.hs

@@ -2,4 +2,4 @@
 yadic
 *.o
 *.swp
-
+dist/
