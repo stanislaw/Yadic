@@ -1,4 +1,5 @@
 cabal:
+	cabal clean
 	cabal install
-build:
+dev:
 	ghc -o yadic yadic.hs
