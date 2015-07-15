@@ -20,6 +20,8 @@ Kamille (noun)
 
 ## Installation
 
+Only OS X was tested so far. `ghc` compiler is needed.
+
 Clone it, build it yourself:
 
 ```bash
