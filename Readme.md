@@ -1,6 +1,6 @@
 # Yadic
 
-Yadic is a command-line dictionary for online translation powered by [Yandex.Dictionary](https://tech.yandex.com/dictionary/).
+Yadic is a command-line tool for online translation powered by [Yandex.Dictionary](https://tech.yandex.com/dictionary/).
 
 __July 15, 2015__ Yadic's 0.1 version was written in two days as my exercise in learning Haskell. I know that true Haskell hackers would hate the way I wrote it (imperative, dirty etc) so I hope to eventually improve it a lot. Meanwhile I would highly appreciate having advice from experienced Haskell programmers.
 
