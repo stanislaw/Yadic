@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Char8 as BS
 import Control.Monad.IO.Class (liftIO)
 import GHC.Generics
+--import Control.Monad ((>=>), (<=<))
 
 data YandexTranslation =
   YandexTranslation {
@@ -39,10 +40,9 @@ instance FromJSON YandexTranslation
 instance FromJSON YandexDefinition
 instance FromJSON YandexDictionaryResult
 
-getTranslation :: String -> String -> String -> IO (Either String YandexDictionaryResult)
-getTranslation apiKey lang word = do
-  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=" ++ lang ++ "&key=" ++ apiKey ++ "&text=" ++ word
-
+getTranslation :: YadicArguments -> IO (Either String YandexDictionaryResult)
+getTranslation arguments = do
+  let url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?lang=" ++ (lng arguments) ++ "&key=" ++ (apiKey arguments) ++ "&text=" ++ (word arguments)
   request <- parseUrl url
   res <- withManager $ \manager -> httpLbs request manager
 
@@ -62,6 +62,12 @@ printYandexDictionaryResult result = do
   -- putStrLn "\nTranslation is provided by Yandex.Dictionary https://tech.yandex.com/dictionary/."
   return ()
 
+printResultOrError :: Either String YandexDictionaryResult -> IO ()
+printResultOrError translation = do
+      case translation of
+        Left err -> putStrLn err
+        Right translation -> printYandexDictionaryResult translation
+
 data YadicConfiguration =
   YadicConfiguration {
     lang :: !String,
@@ -70,47 +76,54 @@ data YadicConfiguration =
 
 instance FromJSON YadicConfiguration
 
+data YadicArguments =
+  YadicArguments {
+    lng :: !String,
+    word :: !String,
+    apiKey:: !String
+  } deriving (Show, Generic)
+
+
+checkFileExist :: String -> IO (Either String String)
+checkFileExist fileFullPath = do
+  fileExists <- doesFileExist fileFullPath
+  if fileExists
+    then return $ Right fileFullPath
+    else return $ Left "The configuration file doesn't exist!"
+
+readYadicConfiguration :: Either String String -> IO (Either String YadicConfiguration)
+readYadicConfiguration filePath =
+    case filePath of
+        Right path -> do
+            yamlConf <- BS.readFile path
+            return $ Right $ fromJust $ Data.Yaml.decode yamlConf
+        Left err -> return $ Left err
+
+getYadicArguments :: [String] -> Either String YadicConfiguration -> Either String YadicArguments
+getYadicArguments args configuration = do
+    conf <- configuration
+    case args of
+        [word] -> return $ YadicArguments (lang conf) word (apikey conf)
+        [lng, word] -> return $ YadicArguments lng word (apikey conf)
+        _ -> Left $ "Yadic, version 0.1. Powered by Yandex.Dictionary https://tech.yandex.com/dictionary/.\n" ++
+                  "Usage:" ++
+                  "  yadic [word]" ++
+                  "  yadic [lang] [word]" ++
+                  "  Example: yadic de-en kamille\n" ++
+                  "Configuration: create ~/.yadic configuration file with the following structure (YAML):\n" ++
+                  "lang: en-en # Default pair of languages to translate (from-to)\n" ++
+                  "apikey: dict.1.1.20150711T192659Z... # your Yandex Dictionary API key"
+
 main = do
-  homePath <- getHomeDirectory 
-  let configFile = combine homePath ".yadic"
-  -- print $ configFile
-
-  fileExists <- doesFileExist configFile
-  if fileExists  
-    then return()
-    else do
-      putStrLn "The configuration file doesn't exist!"
-      exitFailure
-  
-  yamlConf <- BS.readFile configFile 
-
-  let configuration = Data.Yaml.decode yamlConf :: Maybe YadicConfiguration
-  -- print $ fromJust configuration
-
-  let lng = lang $ fromJust configuration
-  let apiKey = apikey $ fromJust configuration
-
   args <- getArgs
-  case args of
-    [word] -> do
-      translation <- getTranslation apiKey lng word
-      case translation of
-        Left err -> putStrLn err
-        Right translation -> printYandexDictionaryResult translation
-      return ()
-    [lang, word] -> do
-      translation <- getTranslation apiKey lang word
-      case translation of
-        Left err -> putStrLn err
-        Right translation -> printYandexDictionaryResult translation
-      return ()
-    _ -> do
-      putStrLn "Yadic, version 0.1. Powered by Yandex.Dictionary https://tech.yandex.com/dictionary/.\n"
-      putStrLn "Usage:"
-      putStrLn "  yadic [word]"
-      putStrLn "  yadic [lang] [word]"
-      putStrLn "  Example: yadic de-en kamille\n"
-      putStrLn "Configuration: create ~/.yadic configuration file with the following structure (YAML):"
-      putStrLn "lang: en-en # Default pair of languages to translate (from-to)"
-      putStrLn "apikey: dict.1.1.20150711T192659Z... # your Yandex Dictionary API key"
+  configuration <- getHomeDirectory >>= (\path -> return $ combine path ".yadic")
+                                    >>= checkFileExist
+                                    >>= readYadicConfiguration
 
+  let arguments = getYadicArguments args configuration
+
+  case arguments of
+      Right arg -> do
+          translation <- getTranslation arg
+          printResultOrError translation
+      Left err -> putStrLn err
